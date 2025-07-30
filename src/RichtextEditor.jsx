@@ -410,6 +410,7 @@ export const RichTextEditor = ({
 
         {/* Placeholder text */}
         {(!editorRef.current || editorRef.current.innerHTML === "") &&
+          charLeft < 1 &&
           !isFocused && (
             <Box
               sx={{
