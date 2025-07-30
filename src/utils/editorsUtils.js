@@ -1,4 +1,9 @@
 /**
+ * Utility functions for rich text editor operations
+ * Provides formatting, selection, and content manipulation functions
+ */
+
+/**
  * Apply formatting to the selected text
  * @param {string} command - The formatting command
  * @param {string} value - Optional value for the command
@@ -9,7 +14,7 @@ export const applyFormatting = (command, value = null) => {
 
 /**
  * Get information about the current selection
- * @returns {object} Selection information
+ * @returns {object|null} Selection information or null if no selection
  */
 export const getSelectionInfo = () => {
   const selection = window.getSelection();
@@ -84,10 +89,43 @@ export const isFormatActive = (command) => {
 
 /**
  * Get the current format block type
- * @returns {string} The current block format
+ * @returns {string} The current block format (h1, h2, h3, h4, h5, h6, p, blockquote)
  */
 export const getCurrentBlockFormat = () => {
-  return document.queryCommandValue("formatBlock");
+  const sel = window.getSelection();
+  if (!sel?.anchorNode) return "p";
+
+  let node =
+    sel.anchorNode.nodeType === Node.ELEMENT_NODE
+      ? sel.anchorNode
+      : sel.anchorNode.parentElement;
+
+  while (node) {
+    const tag = node.tagName?.toUpperCase();
+
+    if (["H1", "H2", "H3", "H4", "H5", "H6", "P", "BLOCKQUOTE"].includes(tag)) {
+      return tag.toLowerCase();
+    }
+
+    // If we're in a list item, look inside it for block-level content
+    if (tag === "LI") {
+      const blockInside = Array.from(node.childNodes).find(
+        (child) =>
+          child.nodeType === Node.ELEMENT_NODE &&
+          ["H1", "H2", "H3", "H4", "H5", "H6", "P"].includes(child.tagName)
+      );
+
+      if (blockInside) {
+        return blockInside.tagName.toLowerCase();
+      }
+
+      return "p"; // Default block inside list item
+    }
+
+    node = node.parentElement;
+  }
+
+  return "p";
 };
 
 /**
@@ -116,14 +154,20 @@ export const insertHTML = (html) => {
 };
 
 /**
- * Get the plain text content from HTML
- * @param {string} html - The HTML content
- * @returns {string} Plain text content
+ * Get the plain text content from HTML and count characters
+ * @param {string} rawText - The HTML content
+ * @returns {number} Character count of plain text content
  */
-export const getPlainText = (html) => {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
+export const countContentRealLength = (rawText) => {
+  if (!rawText) return 0;
+
+  // Remove HTML tags using a regular expression
+  const textContent = rawText.replace(/<\/?[^>]+(>|$)/g, "");
+
+  // Count the length of the cleaned content
+  const characterCount = textContent.length;
+
+  return characterCount;
 };
 
 /**
@@ -132,6 +176,8 @@ export const getPlainText = (html) => {
  * @returns {string} Cleaned HTML
  */
 export const cleanHTML = (html) => {
+  if (!html) return "";
+
   // Create a temporary div to parse the HTML
   const div = document.createElement("div");
   div.innerHTML = html;

@@ -40,5 +40,5 @@ export default {
     commonjs(),
     terser(),
   ],
-  external: ["react", "react-dom", "@material-ui/core", "@material-ui/icons"],
+  external: ["react", "react-dom", "@mui/material", "@mui/icons-material"],
 };

@@ -1,27 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
+import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 
-import { Box, Button, Paper, TextField, Typography } from "@material-ui/core";
-
+/**
+ * LinkTooltip component for inserting and editing links
+ * Provides a modal-like interface for link management
+ */
 export const LinkTooltip = ({
   position,
   onSubmit,
   onClose,
   initialValue = "",
   isEdit = false,
+  tooltipRef,
+  storedRange,
 }) => {
   const [url, setUrl] = useState(initialValue);
   const inputRef = useRef(null);
 
+  // Focus and select input when component mounts or initialValue changes
   useEffect(() => {
     setUrl(initialValue);
     // Focus the input after a brief delay to ensure it's rendered
     setTimeout(() => {
-      typeof inputRef.current.focus === "function" && inputRef.current.focus();
-      typeof inputRef.current.select === "function" &&
+      if (inputRef.current && typeof inputRef.current.focus === "function") {
+        inputRef.current.focus();
+      }
+      if (inputRef.current && typeof inputRef.current.select === "function") {
         inputRef.current.select();
+      }
     }, 50);
   }, [initialValue]);
 
+  /**
+   * Handle form submission
+   * @param {Event} e - Form submission event
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (url.trim()) {
@@ -34,13 +48,26 @@ export const LinkTooltip = ({
     }
   };
 
+  /**
+   * Handle keyboard events
+   * @param {KeyboardEvent} e - Keyboard event
+   */
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
       onClose();
     }
   };
 
+  /**
+   * Handle link removal
+   * Restores selection and removes the link
+   */
   const handleRemoveLink = () => {
+    if (storedRange) {
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(storedRange);
+    }
     document.execCommand("unlink");
     onClose();
   };
@@ -48,6 +75,7 @@ export const LinkTooltip = ({
   return (
     <Paper
       elevation={4}
+      ref={tooltipRef}
       sx={{
         position: "absolute",
         left: position.x,
@@ -61,12 +89,12 @@ export const LinkTooltip = ({
     >
       <Box
         component="form"
-        onSubmit={handleSubmit}
         sx={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           {isEdit ? "Edit Link" : "Insert Link"}
         </Typography>
+
         <TextField
           inputRef={inputRef}
           fullWidth
@@ -77,6 +105,7 @@ export const LinkTooltip = ({
           placeholder="Enter URL (e.g., https://example.com)"
           variant="outlined"
         />
+
         <Box
           sx={{
             display: "flex",
@@ -86,11 +115,11 @@ export const LinkTooltip = ({
         >
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
-              type="submit"
               variant="contained"
               size="small"
               disabled={!url.trim()}
               sx={{ textTransform: "none" }}
+              onClick={handleSubmit}
             >
               {isEdit ? "Update" : "Insert"}
             </Button>
@@ -104,6 +133,7 @@ export const LinkTooltip = ({
               Cancel
             </Button>
           </Box>
+
           {isEdit && (
             <Button
               type="button"
@@ -120,4 +150,36 @@ export const LinkTooltip = ({
       </Box>
     </Paper>
   );
+};
+
+// PropTypes for type checking
+LinkTooltip.propTypes = {
+  /** Position object with x and y coordinates */
+  position: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
+  /** Callback function when link is submitted */
+  onSubmit: PropTypes.func.isRequired,
+  /** Callback function when tooltip is closed */
+  onClose: PropTypes.func.isRequired,
+  /** Initial URL value for the input field */
+  initialValue: PropTypes.string,
+  /** Whether the tooltip is in edit mode */
+  isEdit: PropTypes.bool,
+  /** Ref for the tooltip container */
+  tooltipRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.any }),
+  ]),
+  /** Stored range for link editing */
+  storedRange: PropTypes.object,
+};
+
+// Default props
+LinkTooltip.defaultProps = {
+  initialValue: "",
+  isEdit: false,
+  tooltipRef: null,
+  storedRange: null,
 };

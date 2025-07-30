@@ -1,220 +1,192 @@
-# React Material Rich Editor
+# Material-UI Rich Text Editor
 
-A rich text editor component built with React and Material-UI v4, compatible with older React versions (16.8+).
+A comprehensive rich text editor built with Material-UI components, featuring a full-featured toolbar, link management, and keyboard shortcuts.
 
 ## Features
 
-- 🎨 Material-UI v4 theming support
-- ⌨️ Keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+K)
-- 🔗 Link insertion and editing with tooltip
-- 📝 Text formatting (Bold, Italic, Underline)
-- 📋 Heading support (H1, H2, H3, Paragraph)
-- 📃 Lists (Ordered and Unordered)
-- 💬 Blockquotes
-- 🎯 Lightweight and performant
-- ♿ Accessible with proper ARIA support
+- **Rich Text Formatting**: Bold, italic, underline, strikethrough
+- **Block Formatting**: Headings (H1-H6), paragraphs, lists
+- **Link Management**: Insert, edit, and remove links with a modal interface
+- **Keyboard Shortcuts**: Full keyboard support for common formatting operations
+- **Character Counter**: Optional character limit with visual feedback
+- **Responsive Design**: Clean, modern UI that adapts to different screen sizes
+- **TypeScript Support**: Full PropTypes for type checking and development
 
 ## Installation
 
+### Using npm
+
 ```bash
-npm install react-material-rich-editor
+npm install material-ui-rich-editor
 ```
 
-## Peer Dependencies
-
-Make sure you have these installed in your project:
+### Using yarn
 
 ```bash
-npm install react@^16.8.0 react-dom@^16.8.0 @material-ui/core@^4.0.0 @material-ui/icons@^4.0.0
+yarn add material-ui-rich-editor
 ```
 
 ## Usage
 
-### Basic Usage
-
 ```jsx
 import React, { useState } from "react";
-import RichTextEditor from "react-material-rich-editor";
+import { RichTextEditor } from "material-ui-rich-editor";
 
 function App() {
   const [content, setContent] = useState("");
 
-  return (
-    <div>
-      <RichTextEditor
-        value={content}
-        onChange={setContent}
-        placeholder="Start typing..."
-      />
-    </div>
-  );
-}
-```
-
-### With Custom Styling
-
-```jsx
-import React, { useState } from "react";
-import RichTextEditor from "react-material-rich-editor";
-
-function App() {
-  const [content, setContent] = useState("");
+  const handleChange = (event) => {
+    setContent(event.target.value);
+  };
 
   return (
     <RichTextEditor
       value={content}
-      onChange={setContent}
-      placeholder="Enter your content here..."
-      minHeight="300px"
-      style={{
-        marginTop: 16,
-        marginBottom: 16,
-      }}
+      onChange={handleChange}
+      placeholder="Start typing your content..."
+      maxChars={1000}
     />
   );
 }
 ```
 
-### Advanced Usage with Controlled State
+## Components
 
-```jsx
-import React, { useState, useCallback } from "react";
-import { Button, Box } from "@material-ui/core";
-import RichTextEditor from "react-material-rich-editor";
+### RichTextEditor
 
-function AdvancedEditor() {
-  const [content, setContent] = useState("<p>Initial content</p>");
+The main editor component with full rich text capabilities.
 
-  const handleSave = useCallback(() => {
-    console.log("Saving content:", content);
-    // Send to API or save to state management
-  }, [content]);
+#### Props
 
-  const handleReset = useCallback(() => {
-    setContent("");
-  }, []);
+| Prop          | Type             | Default             | Description                      |
+| ------------- | ---------------- | ------------------- | -------------------------------- |
+| `name`        | `string`         | `""`                | Name attribute for the editor    |
+| `value`       | `string`         | `""`                | Current value of the editor      |
+| `onChange`    | `function`       | `() => {}`          | Callback when content changes    |
+| `onBlur`      | `function`       | `undefined`         | Callback when editor loses focus |
+| `placeholder` | `string`         | `"Start typing..."` | Placeholder text                 |
+| `maxChars`    | `number`         | `null`              | Maximum characters allowed       |
+| `height`      | `string\|number` | `"auto"`            | Editor height                    |
+| `minHeight`   | `string\|number` | `"150px"`           | Minimum height                   |
+| `maxHeight`   | `string\|number` | `null`              | Maximum height                   |
+| `sx`          | `object`         | `{}`                | Additional styles                |
+| `style`       | `object`         | `undefined`         | Inline styles                    |
+| `theme`       | `object`         | `undefined`         | Theme object                     |
 
-  return (
-    <Box>
-      <RichTextEditor
-        value={content}
-        onChange={setContent}
-        placeholder="Write something amazing..."
-        minHeight="400px"
-      />
-      <Box mt={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSave}
-          style={{ marginRight: 8 }}
-        >
-          Save
-        </Button>
-        <Button variant="outlined" onClick={handleReset}>
-          Reset
-        </Button>
-      </Box>
-    </Box>
-  );
-}
-```
+### Toolbar
 
-## Props
+The formatting toolbar component.
 
-| Prop          | Type       | Default             | Description                                |
-| ------------- | ---------- | ------------------- | ------------------------------------------ |
-| `value`       | `string`   | `""`                | The HTML content of the editor             |
-| `onChange`    | `function` | `undefined`         | Callback fired when content changes        |
-| `placeholder` | `string`   | `"Start typing..."` | Placeholder text when editor is empty      |
-| `minHeight`   | `string`   | `"200px"`           | Minimum height of the editor               |
-| `style`       | `object`   | `undefined`         | Additional styles for the editor container |
+#### Props
+
+| Prop                   | Type       | Default      | Description                  |
+| ---------------------- | ---------- | ------------ | ---------------------------- |
+| `onFormat`             | `function` | **required** | Format command callback      |
+| `showStrikethrough`    | `boolean`  | `false`      | Show strikethrough button    |
+| `showCleanFormat`      | `boolean`  | `false`      | Show clean format button     |
+| `currentBlockFormat`   | `string`   | `"p"`        | Current block format         |
+| `currentInlineFormats` | `object`   | `{}`         | Current inline format states |
+
+### LinkTooltip
+
+Modal component for link management.
+
+#### Props
+
+| Prop           | Type       | Default      | Description              |
+| -------------- | ---------- | ------------ | ------------------------ |
+| `position`     | `object`   | **required** | Position coordinates     |
+| `onSubmit`     | `function` | **required** | Link submission callback |
+| `onClose`      | `function` | **required** | Close callback           |
+| `initialValue` | `string`   | `""`         | Initial URL value        |
+| `isEdit`       | `boolean`  | `false`      | Edit mode flag           |
+| `tooltipRef`   | `ref`      | `null`       | Tooltip container ref    |
+| `storedRange`  | `object`   | `null`       | Stored selection range   |
 
 ## Keyboard Shortcuts
 
-| Shortcut           | Action             |
-| ------------------ | ------------------ |
-| `Ctrl+B` / `Cmd+B` | Toggle Bold        |
-| `Ctrl+I` / `Cmd+I` | Toggle Italic      |
-| `Ctrl+U` / `Cmd+U` | Toggle Underline   |
-| `Ctrl+K` / `Cmd+K` | Insert/Edit Link   |
-| `Escape`           | Close Link Tooltip |
+| Shortcut       | Action             |
+| -------------- | ------------------ |
+| `Ctrl/Cmd + B` | Bold               |
+| `Ctrl/Cmd + I` | Italic             |
+| `Ctrl/Cmd + U` | Underline          |
+| `Ctrl/Cmd + S` | Strikethrough      |
+| `Ctrl/Cmd + K` | Insert Link        |
+| `Ctrl/Cmd + E` | Remove Formatting  |
+| `Ctrl/Cmd + Z` | Undo               |
+| `Ctrl/Cmd + Y` | Redo               |
+| `Ctrl/Cmd + [` | Outdent            |
+| `Ctrl/Cmd + ]` | Indent             |
+| `Escape`       | Close link tooltip |
 
-## Styling with Material-UI Theme
+## Utilities
 
-The editor respects your Material-UI theme:
-
-```jsx
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import RichTextEditor from "react-material-rich-editor";
-
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-  },
-});
-
-function ThemedEditor() {
-  return (
-    <ThemeProvider theme={theme}>
-      <RichTextEditor />
-    </ThemeProvider>
-  );
-}
-```
-
-## Utility Functions
-
-The package also exports utility functions for advanced use cases:
+The package exports utility functions for advanced usage:
 
 ```jsx
 import {
   applyFormatting,
-  getSelectionInfo,
   insertLink,
-  isFormatActive,
-  cleanHTML,
-} from "react-material-rich-editor";
-
-// Apply formatting programmatically
-applyFormatting("bold");
-
-// Get current selection info
-const selection = getSelectionInfo();
-
-// Insert a link
-insertLink("https://example.com");
-
-// Check if formatting is active
-const isBold = isFormatActive("bold");
-
-// Clean HTML content
-const cleaned = cleanHTML(htmlContent);
+  getCurrentBlockFormat,
+  countContentRealLength,
+} from "material-ui-rich-editor";
 ```
 
-## Browser Support
+## Development
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Internet Explorer 11+
-- Mobile browsers (iOS Safari, Chrome Mobile)
+### Prerequisites
+
+Make sure you have Node.js installed (version 14 or higher).
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/material-ui-rich-editor.git
+cd material-ui-rich-editor
+
+# Install dependencies
+npm install
+# or
+yarn install
+```
+
+### Development Commands
+
+```bash
+# Start development server with hot reload
+npm start
+# or
+yarn start
+
+# Build for production
+npm run build
+# or
+yarn build
+
+# Run tests (if available)
+npm test
+# or
+yarn test
+```
+
+### Package Manager Support
+
+This project supports both npm and yarn:
+
+- **npm**: Uses `package-lock.json` for dependency locking
+- **yarn**: Uses `yarn.lock` for dependency locking
+
+Choose your preferred package manager and stick with it throughout the project to avoid conflicts.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT © [Your Name]
-
-## Changelog
-
-### 1.0.0
-
-- Initial release
-- Material-UI v4 compatibility
-- Basic rich text editing features
-- Link insertion and management
-- Keyboard shortcuts
-- Responsive design
+MIT
